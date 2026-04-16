@@ -1,0 +1,695 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { loadServices } from "@/lib/servicesApi";
+import TiltCard from "@/components/TiltCard";
+import VideoModal from "@/components/VideoModal";
+import ScrollCanvas from "@/components/ScrollCanvas";
+
+gsap.registerPlugin(ScrollTrigger);
+
+const storySteps = [
+  {
+    id: "vision",
+    eyebrow: "Mi Visión",
+    title: "Precisión humana.\nCuidado personalizado.",
+    text: "En mi práctica, la medicina no se limita a tratar una lesión. Cada paciente recibe una evaluación cuidadosa, un diagnóstico preciso y un plan adaptado a su estilo de vida, sus objetivos y su recuperación.",
+    accent: "Movilidad con confianza",
+    type: "text",
+  },
+  {
+    id: "specialty",
+    eyebrow: "Especialidad",
+    title: "Pie, tobillo\ny miembro inferior.",
+    text: "Mi enfoque está centrado en traumatología y ortopedia con subespecialidad en cirugía de pie y tobillo, combinando experiencia clínica, criterio quirúrgico y soluciones modernas para recuperar función y aliviar dolor.",
+    accent: "Experiencia enfocada",
+    type: "text",
+  },
+  {
+    id: "training",
+    eyebrow: "Formación",
+    title: "Base académica sólida.\nEvolución constante.",
+    text: "Graduado de la Universidad Central del Ecuador, con postgrado en Traumatología y Ortopedia y subespecialidad en Cirugía de Pie y Tobillo en el Hospital Enrique Garcés, manteniendo una práctica basada en preparación y actualización continua.",
+    accent: "Trayectoria profesional",
+    type: "text",
+  },
+  {
+    id: "affiliations",
+    eyebrow: "Formo parte de",
+    title: "Instituciones que\nrespaldan mi trayectoria.",
+    accent: "Confianza construida",
+    type: "logos",
+    logos: [
+      {
+        name: "CEO Ecuador",
+        image: "/assets/images/ceo-color.png",
+        href: "https://www.ceoecuador.com/team/alexander-soto/",
+      },
+      { name: "Vozandes", image: "/assets/images/vozandes-color.png" },
+      {
+        name: "Hospital Metropolitano",
+        image: "/assets/images/metropolitano-color.png",
+        href: "https://www.hospitalmetropolitano.org/en/doctors/2088/alexander-nicolay-soto-toledo",
+      },
+    ],
+  },
+  {
+    id: "mision",
+    eyebrow: "Mi misión",
+    title: "Devolver movimiento.\nRecuperar bienestar.",
+    text: "Mi misión es ayudarte a recuperar la movilidad y la confianza en cada paso, para que vuelvas a disfrutar tus actividades diarias, deportivas y personales sin dolor ni limitaciones.",
+    accent: "Recuperación con propósito",
+    type: "text",
+    button: true,
+  },
+];
+
+export default function HomePage({ onNavigate }) {
+  const [latestPost, setLatestPost] = useState(null);
+  const [activeStep, setActiveStep] = useState(0);
+  const [activeService, setActiveService] = useState(0);
+  const [featuredServices, setFeaturedServices] = useState([]);
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
+
+  const storySectionRef = useRef(null);
+  const panelsRef = useRef([]);
+  const progressBarRef = useRef(null);
+
+  const servicesSectionRef = useRef(null);
+  const servicesCardsRef = useRef([]);
+  const servicesDetailsRef = useRef([]);
+
+  // Data Fetching
+  useEffect(() => {
+    async function fetchLatestPost() {
+      try {
+        const res = await fetch("/api/instagram/latest");
+        if (!res.ok) return;
+        const data = await res.json();
+        setLatestPost(data);
+      } catch (err) {
+        console.error("Error fetching Instagram post", err);
+      }
+    }
+    fetchLatestPost();
+  }, []);
+
+  useEffect(() => {
+    async function fetchFeaturedServices() {
+      try {
+        const data = await loadServices();
+        const selectedIds = [
+          "fracturas-tobillo-pie",
+          "lesiones-ligamentarias",
+          "artroscopia-tobillo",
+          "reemplazo-protesico",
+        ];
+        const selectedServices = selectedIds
+          .map((id) => data.find((service) => service.id === id))
+          .filter(Boolean)
+          .map((service) => ({
+            ...service,
+            image: service.image.replace("../", "/"),
+            shortTitle:
+              service.id === "fracturas-tobillo-pie"
+                ? "Cirugía de pie y tobillo"
+                : service.id === "lesiones-ligamentarias"
+                  ? "Lesiones deportivas"
+                  : service.id === "artroscopia-tobillo"
+                    ? "Procedimientos reconstructivos"
+                    : service.id === "reemplazo-protesico"
+                      ? "Tratamiento del dolor crónico"
+                      : service.title,
+            accent:
+              service.id === "fracturas-tobillo-pie"
+                ? "Tratamiento preciso y recuperación funcional."
+                : service.id === "lesiones-ligamentarias"
+                  ? "Evaluación y manejo especializado."
+                  : service.id === "artroscopia-tobillo"
+                    ? "Técnicas avanzadas y mínimamente invasivas."
+                    : service.id === "reemplazo-protesico"
+                      ? "Soluciones para dolor persistente y función."
+                      : service.description,
+          }));
+        setFeaturedServices(selectedServices);
+      } catch (err) {
+        console.error("Error cargando servicios destacados:", err);
+      }
+    }
+    fetchFeaturedServices();
+  }, []);
+
+  // Force GSAP to recalculate heights after dynamic data loads
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      ScrollTrigger.sort();
+      ScrollTrigger.refresh();
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [featuredServices]);
+
+  // CSS Animations Observer
+  useEffect(() => {
+    const elements = document.querySelectorAll(".animate");
+    const observer = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((entry) => {
+          if (entry.isIntersecting)
+            entry.target.classList.add("animate-visible");
+        }),
+      { threshold: 0.2 },
+    );
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
+  // STORY SECTION
+  useEffect(() => {
+    const section = storySectionRef.current;
+    const panels = panelsRef.current.filter(Boolean);
+    const progressBar = progressBarRef.current;
+    if (!section || !panels.length || !progressBar) return;
+
+    const mm = gsap.matchMedia();
+    mm.add("(min-width: 992px)", () => {
+      gsap.set(progressBar, { scaleX: 0, transformOrigin: "left center" });
+      panels.forEach((panel, index) => {
+        if (index === 0) {
+          gsap.set(panel, {
+            autoAlpha: 1,
+            y: 0,
+            filter: "blur(0px)",
+            pointerEvents: "auto",
+          });
+        } else {
+          gsap.set(panel, {
+            autoAlpha: 0,
+            y: 24,
+            filter: "blur(6px)",
+            pointerEvents: "none",
+          });
+        }
+      });
+
+      const stepsCount = storySteps.length;
+      const segment = 1 / Math.max(stepsCount - 1, 1);
+
+      const tl = gsap.timeline({
+        defaults: { ease: "power2.out" },
+        scrollTrigger: {
+          trigger: section,
+          start: "top top",
+          end: `+=${window.innerHeight * (stepsCount - 1)}`,
+          scrub: 1.15,
+          pin: true,
+          pinSpacing: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          refreshPriority: 3, // MAGIC FIX: Forces GSAP to measure this 1st
+          onUpdate: (self) => {
+            const progress = self.progress;
+            const stepIndex = Math.min(
+              stepsCount - 1,
+              Math.round(progress * (stepsCount - 1)),
+            );
+            setActiveStep(stepIndex);
+            gsap.set(progressBar, { scaleX: progress });
+          },
+        },
+      });
+
+      for (let i = 1; i < panels.length; i += 1) {
+        const prev = panels[i - 1];
+        const current = panels[i];
+        tl.to(
+          prev,
+          {
+            autoAlpha: 0,
+            y: -18,
+            filter: "blur(6px)",
+            duration: segment * 0.45,
+            pointerEvents: "none",
+          },
+          (i - 1) * segment + segment * 0.1,
+        ).fromTo(
+          current,
+          { autoAlpha: 0, y: 18, filter: "blur(6px)", pointerEvents: "none" },
+          {
+            autoAlpha: 1,
+            y: 0,
+            filter: "blur(0px)",
+            duration: segment * 0.55,
+            pointerEvents: "auto",
+          },
+          (i - 1) * segment + segment * 0.45,
+        );
+      }
+
+      return () => {
+        tl.scrollTrigger?.kill();
+        tl.kill();
+      };
+    });
+    return () => mm.revert();
+  }, []);
+
+  // SERVICES SECTION
+  useEffect(() => {
+    servicesCardsRef.current = servicesCardsRef.current.slice(
+      0,
+      featuredServices.length,
+    );
+    servicesDetailsRef.current = servicesDetailsRef.current.slice(
+      0,
+      featuredServices.length,
+    );
+
+    const section = servicesSectionRef.current;
+    const cards = servicesCardsRef.current.filter(Boolean);
+    const details = servicesDetailsRef.current.filter(Boolean);
+    if (
+      !section ||
+      !cards.length ||
+      !details.length ||
+      !featuredServices.length
+    )
+      return;
+
+    const mm = gsap.matchMedia();
+    mm.add("(min-width: 1100px)", () => {
+      gsap.set(cards, {
+        opacity: 0.45,
+        scale: 0.94,
+        y: 20,
+        filter: "blur(1px)",
+      });
+      gsap.set(details, {
+        autoAlpha: 0,
+        y: 24,
+        filter: "blur(8px)",
+        position: "absolute",
+        inset: 0,
+      });
+      gsap.set(cards[0], { opacity: 1, scale: 1, y: 0, filter: "blur(0px)" });
+      gsap.set(details[0], { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+
+      const stepsCount = cards.length;
+      const segment = 1 / Math.max(stepsCount - 1, 1);
+
+      const tl = gsap.timeline({
+        defaults: { ease: "power2.out" },
+        scrollTrigger: {
+          trigger: section,
+          start: "top top",
+          end: `+=${window.innerHeight * Math.max(stepsCount - 1, 1) * 0.8}`,
+          scrub: 1.1,
+          pin: true,
+          pinSpacing: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          refreshPriority: 1, // MAGIC FIX: Forces GSAP to measure this 3rd
+          onUpdate: (self) => {
+            const progress = self.progress;
+            const index = Math.min(
+              stepsCount - 1,
+              Math.round(progress * (stepsCount - 1)),
+            );
+            setActiveService(index);
+          },
+        },
+      });
+
+      for (let i = 1; i < stepsCount; i += 1) {
+        tl.to(
+          cards[i - 1],
+          {
+            opacity: 0.45,
+            scale: 0.94,
+            y: 20,
+            filter: "blur(1px)",
+            duration: segment * 0.45,
+          },
+          (i - 1) * segment + segment * 0.1,
+        )
+          .to(
+            details[i - 1],
+            {
+              autoAlpha: 0,
+              y: -16,
+              filter: "blur(8px)",
+              duration: segment * 0.3,
+            },
+            (i - 1) * segment + segment * 0.1,
+          )
+          .to(
+            cards[i],
+            {
+              opacity: 1,
+              scale: 1,
+              y: 0,
+              filter: "blur(0px)",
+              duration: segment * 0.5,
+            },
+            (i - 1) * segment + segment * 0.4,
+          )
+          .to(
+            details[i],
+            {
+              autoAlpha: 1,
+              y: 0,
+              filter: "blur(0px)",
+              duration: segment * 0.45,
+            },
+            (i - 1) * segment + segment * 0.45,
+          );
+      }
+
+      return () => {
+        tl.scrollTrigger?.kill();
+        tl.kill();
+      };
+    });
+
+    mm.add("(max-width: 1099px)", () => {
+      gsap.set([...cards, ...details], { clearProps: "all" });
+    });
+
+    return () => mm.revert();
+  }, [featuredServices]);
+
+  return (
+    <>
+      <header className="hero-header" id="inicio">
+        <div className="header-container">
+          <img src="/assets/images/portada_dr_alex_soto.png" alt="Portada" />
+          <div className="overlay-text">
+            <h1>DR. ALEXANDER SOTO</h1>
+            <h2>Traumatólogo Especialista en Pie y Tobillo</h2>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        {/* FIRST HALF OF THE PAGE */}
+        <div className="contenedor-main">
+          <section
+            id="sobre-mi"
+            ref={storySectionRef}
+            className="doctor-story-section"
+            aria-label="Mi visión y sobre mí"
+          >
+            <div className="doctor-story-sticky">
+              <div className="doctor-story-shell container">
+                <div className="doctor-story-grid">
+                  <div className="doctor-story-visual">
+                    <div className="doctor-story-image-wrap">
+                      <img
+                        src="/assets/images/Dr-Alexander-Soto.webp"
+                        alt="Doctor Alexander Soto"
+                        className="doctor-story-image"
+                      />
+                    </div>
+                  </div>
+                  <div className="doctor-story-copy">
+                    <div className="doctor-story-copy-inner">
+                      <div className="doctor-story-topline">
+                        <span className="doctor-story-kicker">
+                          {storySteps[activeStep].eyebrow}
+                        </span>
+                        <div className="doctor-story-progress">
+                          <span
+                            ref={progressBarRef}
+                            className="doctor-story-progress-bar"
+                          />
+                        </div>
+                      </div>
+                      <div className="doctor-story-stage">
+                        {storySteps.map((step, index) => (
+                          <article
+                            key={step.id}
+                            ref={(el) => {
+                              panelsRef.current[index] = el;
+                            }}
+                            className="doctor-story-panel"
+                          >
+                            <p className="doctor-story-panel-accent">
+                              {step.accent}
+                            </p>
+                            <h2>
+                              {step.title.split("\n").map((line) => (
+                                <span key={line} className="doctor-story-line">
+                                  {line}
+                                </span>
+                              ))}
+                            </h2>
+                            {step.type === "logos" ? (
+                              <div className="doctor-story-logos-grid">
+                                {step.logos.map((logo) =>
+                                  logo.href ? (
+                                    <a
+                                      key={logo.name}
+                                      href={logo.href}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="doctor-story-logo-card"
+                                    >
+                                      <div className="doctor-story-logo-inner">
+                                        <img
+                                          src={logo.image}
+                                          alt={logo.name}
+                                          className="doctor-story-logo-image"
+                                        />
+                                      </div>
+                                    </a>
+                                  ) : (
+                                    <div
+                                      key={logo.name}
+                                      className="doctor-story-logo-card"
+                                    >
+                                      <div className="doctor-story-logo-inner">
+                                        <img
+                                          src={logo.image}
+                                          alt={logo.name}
+                                          className="doctor-story-logo-image"
+                                        />
+                                      </div>
+                                    </div>
+                                  ),
+                                )}
+                              </div>
+                            ) : (
+                              <p>{step.text}</p>
+                            )}
+                            {step.button && (
+                              <button
+                                onClick={() => setIsVideoOpen(true)}
+                                className="future-link"
+                                style={{
+                                  marginTop: "25px",
+                                  // The updated globals.css now defines the cursor, border, and background, so we remove the inline overrides.
+                                }}
+                              >
+                                CONOCE MÁS SOBRE MÍ
+                              </button>
+                            )}
+                          </article>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile View */}
+            <div className="doctor-story-mobile container">
+              <p className="ph3">Mi Visión y Sobre mí</p>
+              <div className="doctor-story-mobile-image-wrap">
+                <img
+                  src="/assets/images/Dr-Alexander-Soto.webp"
+                  alt="Doctor Alexander Soto"
+                  className="doctor-story-mobile-image"
+                />
+              </div>
+              {storySteps.map((step) => (
+                <article key={step.id} className="doctor-story-mobile-card">
+                  <p className="doctor-story-mobile-eyebrow">{step.eyebrow}</p>
+                  <h2>{step.title.replaceAll("\n", " ")}</h2>
+                  {step.type === "logos" ? (
+                    <div className="doctor-story-logos-grid doctor-story-logos-grid-mobile">
+                      {step.logos.map((logo) => (
+                        <div key={logo.name} className="doctor-story-logo-card">
+                          <div className="doctor-story-logo-inner">
+                            <img
+                              src={logo.image}
+                              alt={logo.name}
+                              className="doctor-story-logo-image"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p>{step.text}</p>
+                  )}
+                </article>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        {/* ======================================================== */}
+        {/* THE CANVAS IS NOW OUTSIDE THE 'CONTENEDOR-MAIN' BRICK WALL */}
+        {/* ======================================================== */}
+        <ScrollCanvas />
+
+        {/* SECOND HALF OF THE PAGE */}
+        <div className="contenedor-main">
+          {featuredServices.length > 0 && (
+            <section
+              id="servicios"
+              ref={servicesSectionRef}
+              className="services-showcase-section"
+              aria-label="Servicios especializados"
+            >
+              <div className="container services-showcase-shell">
+                <div className="services-showcase-header">
+                  <p className="services-showcase-kicker">
+                    Servicios especializados
+                  </p>
+                </div>
+                <div className="services-showcase-grid">
+                  <div className="services-cards-panel">
+                    {featuredServices.map((service, index) => (
+                      <button
+                        key={service.id}
+                        type="button"
+                        className={`service-glow-card ${activeService === index ? "is-active" : ""}`}
+                        ref={(el) => {
+                          servicesCardsRef.current[index] = el;
+                        }}
+                      >
+                        <div className="service-glow-card-inner">
+                          <div className="service-glow-icon-wrap">
+                            <img src={service.image} alt={service.title} />
+                          </div>
+                          <div className="service-glow-copy">
+                            <h3>{service.shortTitle}</h3>
+                            <p>{service.accent}</p>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="services-detail-panel">
+                    <div className="services-detail-stage">
+                      {featuredServices.map((service, index) => (
+                        <article
+                          key={service.id}
+                          ref={(el) => {
+                            servicesDetailsRef.current[index] = el;
+                          }}
+                          className="services-detail-card"
+                        >
+                          <p className="services-detail-index">
+                            {String(index + 1).padStart(2, "0")}
+                          </p>
+                          <h3>{service.title}</h3>
+                          <p>{service.description}</p>
+                          {/* We leave this SPA navigation link as text (already matches the minimal style) */}
+                          <button
+                            onClick={() => onNavigate("services")}
+                            className="services-detail-link"
+                            style={{
+                              background: "transparent",
+                              border: "none",
+                              cursor: "pointer",
+                              padding: 0,
+                            }}
+                          >
+                            Descubre más servicios
+                          </button>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          <section id="seguros" className="flare-section">
+            <div className="flare-ambient-orb orb-left" />
+            <div className="flare-ambient-orb orb-right" />
+            <div className="container flare-shell">
+              <div className="flare-header">
+                <h2 className="flare-title">Respaldados Por Los Mejores</h2>
+                <p className="flare-description">
+                  Trabajamos con las principales aseguradoras para garantizar
+                  que tu recuperación sea tu única preocupación.
+                </p>
+              </div>
+              <div className="flare-grid">
+                <TiltCard
+                  href="https://palig.com/es/ec"
+                  image="/assets/images/Seguro-PANAMERICAN-LIFE-DE-ECUADOR.webp"
+                  alt="Pan American Life"
+                />
+                <TiltCard
+                  href="https://www.saludsa.com/"
+                  image="/assets/images/Seguro-Saludsa.webp"
+                  alt="Saludsa"
+                />
+                <TiltCard
+                  href="https://humana.med.ec/"
+                  image="/assets/images/Seguro-nuestra-esencia-es-humana.webp"
+                  alt="Humana"
+                />
+                <TiltCard
+                  href="https://www.ecuasanitas.com/"
+                  image="/assets/images/Seguro-Ecuasanitas.webp"
+                  alt="Ecuasanitas"
+                />
+                <TiltCard
+                  href="https://www.bmicos.com/ecuador/"
+                  image="/assets/images/Seguro-BMI.webp"
+                  alt="BMI"
+                />
+              </div>
+            </div>
+          </section>
+
+          {latestPost && (
+            <section className="instagram-container animate">
+              <p className="ph3">Últimas publicaciones</p>
+              <a
+                href={latestPost.permalink}
+                target="_blank"
+                rel="noreferrer"
+                className="instagram-post-card"
+              >
+                <img
+                  src={latestPost.thumbnail_url || latestPost.media_url}
+                  alt={latestPost.caption || "Última publicación de Instagram"}
+                />
+                {latestPost.caption && (
+                  <p className="instagram-caption">
+                    {latestPost.caption.substring(0, 100)}...
+                  </p>
+                )}
+              </a>
+            </section>
+          )}
+        </div>
+      </main>
+
+      <VideoModal
+        isOpen={isVideoOpen}
+        onClose={() => setIsVideoOpen(false)}
+        videoId="JvI7efSek0w"
+      />
+    </>
+  );
+}
