@@ -67,11 +67,12 @@ export default function Footer() {
               <ul className="site-footer-list">
                 <li>
                   <span>Lunes</span>
-                  <strong>09h00 a 13h00 · 15h00 a 18h00</strong>
+                  <strong>09h00 a 13h00 · 15h00 a 18h00 (Quito)</strong>
                 </li>
                 <li>
                   <span>Miércoles</span>
-                  <strong>Tumbaco / Quito (Previa Cita)</strong>
+                  <strong>09h00 a 13h00 (Tumbaco - La Martina)</strong>
+                  <strong>15h00 a 19h00 (Quito)</strong>
                 </li>
                 <li>
                   <span>Jueves y Viernes</span>
@@ -85,9 +86,13 @@ export default function Footer() {
 
               <div className="site-footer-contact-block">
                 <p className="site-footer-contact-title">Ubicación Principal</p>
-                <p className="site-footer-contact-text">
+                <a
+                  className="site-footer-link"
+                  href="https://www.google.com/maps/search/?api=1&query=Av. Mariana de Jesús OE7-02 y Nuño de Valderrama P.B., Quito"
+                  target="_blank"
+                >
                   Av. Mariana de Jesús OE7-02 y Nuño de Valderrama P.B., Quito.
-                </p>
+                </a>
               </div>
 
               {/* The "Tech" Trigger Button */}
@@ -112,6 +117,23 @@ export default function Footer() {
                 <p className="site-footer-contact-title">
                   Atención Telefónica / WhatsApp
                 </p>
+                <a
+                  href="tel:+593990165538"
+                  className="site-footer-link"
+                  style={{ fontWeight: "700" }}
+                >
+                  (+593) 990165538
+                </a>
+                <p className="site-footer-contact-title">
+                  Contactos personales
+                </p>
+                <a
+                  href="mailto:alexandersototoledo@gmail.com"
+                  className="site-footer-link"
+                  style={{ fontWeight: "700" }}
+                >
+                  alexandersototoledo@gmail.com
+                </a>
                 <a
                   href="tel:+593990165538"
                   className="site-footer-link"
@@ -144,7 +166,8 @@ export default function Footer() {
               }}
             >
               HeiLabs
-            </a>
+            </a>{" "}
+            Germany
           </p>
         </div>
       </div>

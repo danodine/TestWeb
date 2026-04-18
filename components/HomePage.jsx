@@ -47,12 +47,12 @@ const storySteps = [
         image: "/assets/images/ceo-color.png",
         href: "https://www.ceoecuador.com/team/alexander-soto/",
       },
-      { name: "Vozandes", image: "/assets/images/vozandes-color.png" },
       {
         name: "Hospital Metropolitano",
         image: "/assets/images/metropolitano-color.png",
         href: "https://www.hospitalmetropolitano.org/en/doctors/2088/alexander-nicolay-soto-toledo",
       },
+      { name: "Vozandes", image: "/assets/images/vozandes-color.png" },
     ],
   },
   {
@@ -67,7 +67,6 @@ const storySteps = [
 ];
 
 export default function HomePage({ onNavigate }) {
-  const [latestPost, setLatestPost] = useState(null);
   const [activeStep, setActiveStep] = useState(0);
   const [activeService, setActiveService] = useState(0);
   const [featuredServices, setFeaturedServices] = useState([]);
@@ -80,21 +79,6 @@ export default function HomePage({ onNavigate }) {
   const servicesSectionRef = useRef(null);
   const servicesCardsRef = useRef([]);
   const servicesDetailsRef = useRef([]);
-
-  // Data Fetching
-  useEffect(() => {
-    async function fetchLatestPost() {
-      try {
-        const res = await fetch("/api/instagram/latest");
-        if (!res.ok) return;
-        const data = await res.json();
-        setLatestPost(data);
-      } catch (err) {
-        console.error("Error fetching Instagram post", err);
-      }
-    }
-    fetchLatestPost();
-  }, []);
 
   useEffect(() => {
     async function fetchFeaturedServices() {
@@ -383,7 +367,19 @@ export default function HomePage({ onNavigate }) {
     <>
       <header className="hero-header" id="inicio">
         <div className="header-container">
-          <img src="/assets/images/portada_dr_alex_soto.png" alt="Portada" />
+          <picture>
+            {/* If screen is 768px or smaller, use the mobile version */}
+            <source
+              srcSet="/assets/images/portada_dr_alex_soto_mobile.jpg"
+              media="(max-width: 768px)"
+            />
+            {/* Default/Desktop image */}
+            <img
+              src="/assets/images/portada_dr_alex_soto.png"
+              alt="Dr. Alexander Soto - Portada"
+            />
+          </picture>
+
           <div className="overlay-text">
             <h1>DR. ALEXANDER SOTO</h1>
             <h2>Traumatólogo Especialista en Pie y Tobillo</h2>
@@ -502,8 +498,7 @@ export default function HomePage({ onNavigate }) {
                 </div>
               </div>
             </div>
-
-            {/* Mobile View */}
+            Mobile View
             <div className="doctor-story-mobile container">
               <p className="ph3">Mi Visión y Sobre mí</p>
               <div className="doctor-story-mobile-image-wrap">
@@ -660,28 +655,6 @@ export default function HomePage({ onNavigate }) {
               </div>
             </div>
           </section>
-
-          {latestPost && (
-            <section className="instagram-container animate">
-              <p className="ph3">Últimas publicaciones</p>
-              <a
-                href={latestPost.permalink}
-                target="_blank"
-                rel="noreferrer"
-                className="instagram-post-card"
-              >
-                <img
-                  src={latestPost.thumbnail_url || latestPost.media_url}
-                  alt={latestPost.caption || "Última publicación de Instagram"}
-                />
-                {latestPost.caption && (
-                  <p className="instagram-caption">
-                    {latestPost.caption.substring(0, 100)}...
-                  </p>
-                )}
-              </a>
-            </section>
-          )}
         </div>
       </main>
 

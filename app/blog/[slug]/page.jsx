@@ -22,6 +22,20 @@ export default async function BlogPostPage({ params }) {
       <div className="future-orb two" />
 
       <div className="blog-editorial-container">
+        <div style={{ paddingTop: "120px", marginBottom: "-100px" }}>
+          <Link
+            href="/blog"
+            className="future-link"
+            style={{
+              gap: "10px",
+              padding: "0 20px",
+              minHeight: "40px",
+              fontSize: "0.8rem",
+            }}
+          >
+            <span style={{ fontSize: "1.2rem" }}>←</span> VOLVER
+          </Link>
+        </div>
         {/* HEADER AREA */}
         <header className="blog-header-section">
           <div className="blog-post-meta">
@@ -57,18 +71,6 @@ export default async function BlogPostPage({ params }) {
               </span>
             ))}
           </h1>
-
-          <div className="blog-author-strip">
-            <img
-              src="/assets/images/Dr-Alexander-Soto.webp"
-              className="author-mini-photo"
-              alt="Dr. Soto"
-            />
-            <div className="author-mini-info">
-              <p className="name">Dr. Alexander Soto</p>
-              <p className="role">Head of Orthopedic Vanguard</p>
-            </div>
-          </div>
         </header>
 
         {/* MAIN GRID */}
@@ -87,13 +89,15 @@ export default async function BlogPostPage({ params }) {
               {post.paragraph1}
             </p>
 
-            <p style={{ marginBottom: "30px" }}>{post.paragraph2}</p>
+            <p style={{ marginBottom: "30px", color: "rgba(255,255,255,0.8)" }}>
+              {post.paragraph2}
+            </p>
 
             {/* Note Box (The Robotic Advantage style) */}
             <div className="blog-note-box">
               <h4>
-                <span style={{ color: "var(--cyan)" }}>✦</span> The Robotic
-                Advantage
+                <span style={{ color: "var(--cyan)" }}>✦</span>
+                {post.noteTitle}
               </h4>
               <p>{post.note}</p>
             </div>
@@ -109,7 +113,9 @@ export default async function BlogPostPage({ params }) {
               {post.subtitle}
             </h2>
 
-            <p>{post.subparagraph1}</p>
+            <p style={{ color: "rgba(255,255,255,0.8)" }}>
+              {post.subparagraph1}
+            </p>
 
             <div
               className="blog-post-visual-wrap"
@@ -122,7 +128,9 @@ export default async function BlogPostPage({ params }) {
               />
             </div>
 
-            <p>{post.subparagraph2}</p>
+            <p style={{ color: "rgba(255,255,255,0.8)" }}>
+              {post.subparagraph2}
+            </p>
 
             {/* List with checkmarks */}
             <ul className="blog-check-list">
@@ -130,71 +138,25 @@ export default async function BlogPostPage({ params }) {
                 <li key={i}>{item}</li>
               ))}
             </ul>
-
-            {/* Bio Card at the bottom of content */}
-            <div className="author-bio-card">
-              <img
-                src="/assets/images/Dr-Alexander-Soto.webp"
-                className="author-avatar"
-                alt="Dr. Soto"
-              />
-              <div className="author-info">
-                <span
-                  style={{
-                    color: "var(--cyan)",
-                    fontSize: "0.8rem",
-                    fontWeight: "800",
-                  }}
-                >
-                  Escrito por
-                </span>
-                <h3>Dr. Alexander Soto</h3>
-                <p>
-                  Director of Orthopedic Vanguard. Pioneer in robotic-assisted
-                  orthopedic surgery with over 15 years of experience.
-                </p>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "15px",
-                    marginTop: "15px",
-                    color: "var(--cyan)",
-                  }}
-                >
-                  <FaLinkedin /> <FaTwitter /> <FaLink />
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* RIGHT COLUMN: SIDEBAR */}
           <aside className="blog-sidebar">
             <div className="sidebar-reading-block">
-              <span className="sidebar-section-title">
-                Lecturas Relacionadas
-              </span>
-              {relatedPosts.map((rp, i) => (
-                <Link
-                  key={i}
-                  href={`/blog/${rp.slug}`}
-                  className="related-post-link"
-                >
-                  <span>{rp.type}</span>
-                  <h4>{rp.title}</h4>
-                  <p
-                    style={{
-                      fontSize: "0.75rem",
-                      color: "var(--muted)",
-                      marginTop: "5px",
-                    }}
-                  >
-                    5 min read • {rp.date}
-                  </p>
-                </Link>
-              ))}
+              <div className="blog-author-strip">
+                <img
+                  src="/assets/images/Dr-Alexander-Soto.webp"
+                  className="author-mini-photo"
+                  alt="Dr. Soto"
+                />
+                <div className="author-mini-info">
+                  <p className="name">Dr. Alexander Soto</p>
+                  <p className="role">Especialista en pie y tobillo</p>
+                </div>
+              </div>
             </div>
 
-            <div className="sidebar-share-block" style={{ marginTop: "50px" }}>
+            {/* <div className="sidebar-share-block" style={{ marginTop: "50px" }}>
               <span className="sidebar-section-title">Compartir</span>
               <div
                 style={{
@@ -208,7 +170,7 @@ export default async function BlogPostPage({ params }) {
                 <FaLinkedin style={{ cursor: "pointer" }} />
                 <FaLink style={{ cursor: "pointer" }} />
               </div>
-            </div>
+            </div> */}
           </aside>
         </div>
 
@@ -241,7 +203,7 @@ export default async function BlogPostPage({ params }) {
                 fontSize: "0.8rem",
               }}
             >
-              VER TODO EL BLOG
+              VER TODOS
             </Link>
           </div>
 
