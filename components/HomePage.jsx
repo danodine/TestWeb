@@ -498,7 +498,6 @@ export default function HomePage({ onNavigate }) {
                 </div>
               </div>
             </div>
-            Mobile View
             <div className="doctor-story-mobile container">
               <p className="ph3">Mi Visión y Sobre mí</p>
               <div className="doctor-story-mobile-image-wrap">
